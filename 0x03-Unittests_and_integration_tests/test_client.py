@@ -47,7 +47,7 @@ class TestGithubOrgClient(unittest.TestCase):
             {"name": "repo2", "license": {"key": "apache-2.0"}},
         ]
         mock_get_json.return_value = repos_payload
-        
+
         with patch.object(
             GithubOrgClient,
             "_public_repos_url",
