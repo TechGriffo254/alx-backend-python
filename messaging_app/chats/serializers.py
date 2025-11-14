@@ -1,5 +1,6 @@
 """Serializers for the messaging application."""
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from .models import User, Conversation, Message
 
 
@@ -25,6 +26,10 @@ class MessageSerializer(serializers.ModelSerializer):
     """Serializer for Message model."""
     sender = UserSerializer(read_only=True)
     sender_id = serializers.UUIDField(write_only=True)
+    
+    def validate(self, data):
+        """Validate message data."""
+        return data
 
     class Meta:
         """Meta options for MessageSerializer."""

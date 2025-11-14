@@ -1,5 +1,5 @@
 """Views for the messaging application."""
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import User, Conversation, Message
@@ -23,6 +23,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         'messages'
     )
     serializer_class = ConversationSerializer
+    filter_backends = [filters.SearchFilter]
 
     @action(detail=True, methods=['post'])
     def add_message(self, request, pk=None):
@@ -39,6 +40,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     """ViewSet for Message model."""
     queryset = Message.objects.all().select_related('sender', 'conversation')
     serializer_class = MessageSerializer
+    filter_backends = [filters.SearchFilter]
 
     def perform_create(self, serializer):
         """Set the sender when creating a message."""
