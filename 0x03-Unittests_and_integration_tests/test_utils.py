@@ -54,7 +54,8 @@ class TestGetJson(unittest.TestCase):
         test_payload: Dict,
         mock_get: Mock
     ) -> None:
-        """Test that get_json returns expected result and calls requests.get."""
+        """Test that get_json returns expected result and calls
+        requests.get."""
         mock_resp = Mock()
         mock_resp.json.return_value = test_payload
         mock_get.return_value = mock_resp
