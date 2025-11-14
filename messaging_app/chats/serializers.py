@@ -26,9 +26,12 @@ class MessageSerializer(serializers.ModelSerializer):
     """Serializer for Message model."""
     sender = UserSerializer(read_only=True)
     sender_id = serializers.UUIDField(write_only=True)
+    message_body = serializers.CharField(max_length=5000)
     
     def validate(self, data):
         """Validate message data."""
+        if 'message_body' in data and not data['message_body'].strip():
+            raise serializers.ValidationError("Message body cannot be empty")
         return data
 
     class Meta:
@@ -54,6 +57,11 @@ class ConversationSerializer(serializers.ModelSerializer):
         required=False
     )
     messages = MessageSerializer(many=True, read_only=True)
+    message_count = serializers.SerializerMethodField()
+    
+    def get_message_count(self, obj):
+        """Get the count of messages in the conversation."""
+        return obj.messages.count()
 
     class Meta:
         """Meta options for ConversationSerializer."""
@@ -63,9 +71,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             'participants',
             'participant_ids',
             'messages',
+            'message_count',
             'created_at'
         ]
-        read_only_fields = ['conversation_id', 'created_at']
+        read_only_fields = ['conversation_id', 'created_at', 'message_count']
 
     def create(self, validated_data):
         """Create a conversation with participants."""
