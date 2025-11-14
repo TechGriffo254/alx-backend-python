@@ -12,6 +12,8 @@ class User(AbstractUser):
         editable=False,
         db_index=True
     )
+    first_name = models.CharField(max_length=150, null=False, blank=False)
+    last_name = models.CharField(max_length=150, null=False, blank=False)
     email = models.EmailField(unique=True, null=False, blank=False)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     ROLE_CHOICES = [
