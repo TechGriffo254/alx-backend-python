@@ -6,6 +6,8 @@ from .models import User, Conversation, Message
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model."""
+    password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
+    
     class Meta:
         """Meta options for UserSerializer."""
         model = User
@@ -15,11 +17,39 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'email',
+            'password',
             'phone_number',
             'role',
             'created_at'
         ]
         read_only_fields = ['user_id', 'created_at']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'email': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+        }
+    
+    def create(self, validated_data):
+        """Create a new user with encrypted password."""
+        password = validated_data.pop('password', None)
+        user = User.objects.create(**validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
+    
+    def update(self, instance, validated_data):
+        """Update user, handling password separately."""
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        if password:
+            instance.set_password(password)
+        
+        instance.save()
+        return instance
 
 
 class MessageSerializer(serializers.ModelSerializer):

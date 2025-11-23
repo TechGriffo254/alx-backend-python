@@ -1,26 +1,66 @@
 # Messaging App - Django REST Framework
 
-A robust messaging application built with Django REST Framework that implements a complete messaging system with users, conversations, and messages.
+A robust messaging application built with Django REST Framework that implements a complete messaging system with JWT authentication, role-based permissions, pagination, and filtering.
+
+## 🚀 New Features (November 2025)
+
+✅ **JWT Authentication** - Secure token-based authentication with SimpleJWT  
+✅ **Custom Permissions** - Object-level permissions for conversations and messages  
+✅ **Pagination** - Efficient data loading (20 messages per page)  
+✅ **Filtering** - Advanced filtering by user, time range, and content  
+✅ **Postman Tests** - Comprehensive API testing collection included  
 
 ## Project Structure
 
 ```
 messaging_app/
 ├── messaging_app/          # Main project directory
-│   ├── settings.py        # Project settings and configuration
-│   ├── urls.py            # Main URL routing
+│   ├── settings.py        # Project settings with JWT & permissions config
+│   ├── urls.py            # Main URL routing with auth endpoints
 │   └── wsgi.py            # WSGI configuration
 ├── chats/                 # Chats application
 │   ├── models.py          # Data models (User, Conversation, Message)
-│   ├── serializers.py     # DRF serializers
-│   ├── views.py           # ViewSets for API endpoints
+│   ├── serializers.py     # DRF serializers with password handling
+│   ├── views.py           # ViewSets with permissions & pagination
 │   ├── urls.py            # App-specific URL routing
+│   ├── auth.py            # Authentication views (NEW)
+│   ├── permissions.py     # Custom permission classes (NEW)
+│   ├── pagination.py      # Pagination classes (NEW)
+│   ├── filters.py         # Filter classes (NEW)
 │   ├── admin.py           # Django admin configuration
 │   └── migrations/        # Database migrations
+├── post_man-Collections/  # Postman testing collection (NEW)
+│   ├── MessagingApp_API_Collection.json
+│   ├── TESTING_GUIDE.md
+│   └── PROJECT_DOCUMENTATION.md
 └── manage.py              # Django management script
 ```
 
 ## Features
+
+### Authentication & Security
+- **JWT Token Authentication** using djangorestframework-simplejwt
+- **Token Refresh & Rotation** for enhanced security
+- **Token Blacklisting** on logout
+- **Secure Password Hashing** with Django's PBKDF2
+- **Register/Login/Logout** endpoints
+
+### Permissions
+- **IsParticipantOfConversation** - Only conversation participants can access messages
+- **IsMessageSender** - Only message senders can edit/delete their messages
+- **IsAdminOrOwner** - Admin override for management
+- **Object-level permissions** for fine-grained access control
+
+### Pagination
+- **MessagePagination** - 20 messages per page (configurable)
+- **ConversationPagination** - 10 conversations per page
+- **Customizable page size** via query parameters
+
+### Filtering
+- **Filter messages** by conversation, sender, time range, content
+- **Filter conversations** by participant username or ID
+- **Date range filtering** for messages and conversations
+- **Search functionality** in message bodies
 
 ### Models
 

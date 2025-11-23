@@ -16,9 +16,57 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
+from chats.auth import register_user, login_user, logout_user
+
+
+def api_root(request):
+    """API root endpoint with available endpoints information."""
+    return JsonResponse({
+        'message': 'Welcome to Messaging App API',
+        'version': '1.0.0',
+        'documentation': '/api/',
+        'authentication': {
+            'register': '/api/auth/register/',
+            'login': '/api/auth/login/',
+            'logout': '/api/auth/logout/',
+            'token': '/api/auth/token/',
+            'token_refresh': '/api/auth/token/refresh/',
+            'token_verify': '/api/auth/token/verify/',
+        },
+        'endpoints': {
+            'users': '/api/users/',
+            'conversations': '/api/conversations/',
+            'messages': '/api/messages/',
+            'current_user': '/api/users/me/',
+        },
+        'features': [
+            'JWT Authentication',
+            'Role-based Permissions',
+            'Pagination (20 messages/page)',
+            'Advanced Filtering',
+            'Search Functionality'
+        ],
+        'status': 'online'
+    })
+
 
 urlpatterns = [
+    path('', api_root, name='api_root'),
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),
     path('api-auth/', include('rest_framework.urls')),
+    
+    # JWT Authentication endpoints
+    path('api/auth/register/', register_user, name='auth_register'),
+    path('api/auth/login/', login_user, name='auth_login'),
+    path('api/auth/logout/', logout_user, name='auth_logout'),
+    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]
