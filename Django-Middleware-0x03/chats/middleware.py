@@ -177,7 +177,7 @@ class OffensiveLanguageMiddleware(MiddlewareMixin):
         return request_count >= self.MAX_REQUESTS
 
 
-class RolePermissionMiddleware(MiddlewareMixin):
+class RolepermissionMiddleware(MiddlewareMixin):
     """
     Middleware to enforce role-based permissions.
     
