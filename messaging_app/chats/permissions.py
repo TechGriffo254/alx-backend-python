@@ -26,16 +26,23 @@ class IsParticipantOfConversation(permissions.BasePermission):
         
         For Message objects, check if user is participant of the conversation.
         For Conversation objects, check if user is in the participants list.
+        Handles PUT, PATCH, DELETE methods.
         """
         # Import here to avoid circular imports
         from .models import Message, Conversation
         
         # If the object is a Message, check the conversation
         if isinstance(obj, Message):
+            # Check if user is participant for all methods including PUT, PATCH, DELETE
+            if request.method in ['PUT', 'PATCH', 'DELETE']:
+                return request.user in obj.conversation.participants.all()
             return request.user in obj.conversation.participants.all()
         
         # If the object is a Conversation, check participants directly
         if isinstance(obj, Conversation):
+            # Check if user is participant for all methods including PUT, PATCH, DELETE
+            if request.method in ['PUT', 'PATCH', 'DELETE']:
+                return request.user in obj.participants.all()
             return request.user in obj.participants.all()
         
         return False
