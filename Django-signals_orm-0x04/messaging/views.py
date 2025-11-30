@@ -56,16 +56,18 @@ def inbox(request):
     Display the user's inbox with all received messages.
     
     Task 5: This view is cached for 60 seconds using cache_page decorator.
-    Uses the custom manager to show unread messages first,
-    with optimized queries.
+    Task 4: Uses the custom manager and .only() to optimize field retrieval.
     """
     # Get unread messages using custom manager (Task 4)
     unread_messages = Message.unread.unread_for_user(request.user)
     
-    # Get all messages with optimized loading
+    # Get all messages with optimized loading using .only() (Task 4)
     all_messages = Message.objects.filter(
         receiver=request.user
-    ).select_related('sender', 'parent_message').prefetch_related('replies')
+    ).select_related('sender', 'parent_message').prefetch_related('replies').only(
+        'id', 'sender__username', 'receiver__username', 'content', 
+        'timestamp', 'read', 'edited', 'parent_message__id'
+    )
     
     context = {
         'unread_messages': unread_messages,
@@ -98,11 +100,12 @@ def message_detail(request, message_id):
         message.mark_as_read()
     
     # Get all replies with prefetch_related for optimization (Task 3)
+    # Using .only() to retrieve only necessary fields (Task 4)
     replies = Message.objects.filter(
         parent_message=message
     ).select_related('sender', 'receiver').prefetch_related(
         Prefetch('replies', queryset=Message.objects.select_related('sender', 'receiver'))
-    )
+    ).only('id', 'sender__username', 'receiver__username', 'content', 'timestamp', 'read')
     
     # Get message edit history (Task 1)
     history = MessageHistory.objects.filter(
