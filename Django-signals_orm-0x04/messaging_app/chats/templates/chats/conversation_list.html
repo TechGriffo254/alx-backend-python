@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation List (Cached)</title>
+</head>
+<body>
+    <h1>Conversation List</h1>
+    <p><em>This view is cached for {{ cache_timeout }} seconds</em></p>
+    
+    <h2>Your Messages</h2>
+    <ul>
+    {% for message in messages %}
+        <li>
+            <strong>From: {{ message.sender.username }}</strong><br>
+            {{ message.content|truncatewords:15 }}<br>
+            <small>{{ message.timestamp }}</small>
+        </li>
+    {% empty %}
+        <li>No messages</li>
+    {% endfor %}
+    </ul>
+    
+    <div>
+        <a href="/">Home</a>
+    </div>
+</body>
+</html>
