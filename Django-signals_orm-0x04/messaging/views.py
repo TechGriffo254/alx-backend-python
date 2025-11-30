@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages as django_messages
 from django.http import JsonResponse, HttpResponseForbidden
 from django.db.models import Prefetch
+from django.views.decorators.cache import cache_page
 from .models import Message, Notification, MessageHistory
 
 
@@ -49,10 +50,12 @@ def delete_user(request):
 
 
 @login_required
+@cache_page(60)
 def inbox(request):
     """
     Display the user's inbox with all received messages.
     
+    Task 5: This view is cached for 60 seconds using cache_page decorator.
     Uses the custom manager to show unread messages first,
     with optimized queries.
     """
@@ -116,10 +119,12 @@ def message_detail(request, message_id):
 
 
 @login_required
+@cache_page(60)
 def conversation_thread(request, message_id):
     """
     Task 3: Display a threaded conversation starting from a root message.
     
+    Task 5: This view is cached for 60 seconds using cache_page decorator.
     Implements recursive querying using Django's ORM to fetch all replies
     in a threaded format with optimized database access.
     """
