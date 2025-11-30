@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inbox</title>
+</head>
+<body>
+    <h1>Inbox</h1>
+    
+    <h2>Unread Messages ({{ unread_messages.count }})</h2>
+    <ul>
+    {% for message in unread_messages %}
+        <li>
+            <strong>From: {{ message.sender.username }}</strong><br>
+            {{ message.content|truncatewords:10 }}<br>
+            <small>{{ message.timestamp }}</small><br>
+            <a href="{% url 'messaging:message_detail' message.id %}">View</a>
+        </li>
+    {% empty %}
+        <li>No unread messages</li>
+    {% endfor %}
+    </ul>
+    
+    <h2>All Messages</h2>
+    <ul>
+    {% for message in all_messages %}
+        <li>
+            <strong>From: {{ message.sender.username }}</strong>
+            {% if message.read %}(Read){% else %}(Unread){% endif %}<br>
+            {{ message.content|truncatewords:10 }}<br>
+            <small>{{ message.timestamp }}</small><br>
+            <a href="{% url 'messaging:message_detail' message.id %}">View</a>
+        </li>
+    {% empty %}
+        <li>No messages</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation Thread</title>
+</head>
+<body>
+    <h1>Conversation Thread</h1>
+    
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+        <h2>Root Message</h2>
+        <strong>From:</strong> {{ root_message.sender.username }}<br>
+        <strong>To:</strong> {{ root_message.receiver.username }}<br>
+        <strong>Sent:</strong> {{ root_message.timestamp }}<br>
+        <p>{{ root_message.content }}</p>
+    </div>
+    
+    <h2>Thread Replies</h2>
+    {% for message in thread_messages %}
+    <div style="border: 1px solid #eee; padding: 10px; margin: 10px 0 10px 20px;">
+        <strong>{{ message.sender.username }}</strong> - {{ message.timestamp }}<br>
+        <p>{{ message.content }}</p>
+        
+        {% if message.replies.all %}
+        <div style="margin-left: 20px;">
+            {% for nested_reply in message.replies.all %}
+            <div style="border-left: 2px solid #ddd; padding-left: 10px; margin-top: 5px;">
+                <strong>{{ nested_reply.sender.username }}</strong> - {{ nested_reply.timestamp }}<br>
+                <p>{{ nested_reply.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p>No replies yet.</p>
+    {% endfor %}
+    
+    <div>
+        <a href="{% url 'messaging:inbox' %}">Back to Inbox</a>
+    </div>
+</body>
+</html>

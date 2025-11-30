@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message Detail</title>
+</head>
+<body>
+    <h1>Message Detail</h1>
+    
+    <div>
+        <strong>From:</strong> {{ message.sender.username }}<br>
+        <strong>To:</strong> {{ message.receiver.username }}<br>
+        <strong>Sent:</strong> {{ message.timestamp }}<br>
+        <strong>Status:</strong> 
+        {% if message.edited %}Edited{% endif %}
+        {% if message.read %}Read{% else %}Unread{% endif %}<br>
+        
+        {% if message.parent_message %}
+        <strong>Reply to:</strong> <a href="{% url 'messaging:message_detail' message.parent_message.id %}">Original Message</a><br>
+        {% endif %}
+    </div>
+    
+    <div>
+        <h2>Content</h2>
+        <p>{{ message.content }}</p>
+    </div>
+    
+    {% if history %}
+    <div>
+        <h2>Edit History</h2>
+        <ul>
+        {% for h in history %}
+            <li>
+                <strong>{{ h.edited_at }}</strong> - Edited by {{ h.edited_by.username }}<br>
+                Previous content: {{ h.old_content }}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    {% if replies %}
+    <div>
+        <h2>Replies</h2>
+        <ul>
+        {% for reply in replies %}
+            <li>
+                <strong>{{ reply.sender.username }}</strong> - {{ reply.timestamp }}<br>
+                {{ reply.content|truncatewords:15 }}<br>
+                <a href="{% url 'messaging:message_detail' reply.id %}">View</a>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <div>
+        <a href="{% url 'messaging:conversation_thread' message.id %}">View Thread</a>
+        {% if user == message.sender %}
+        <a href="{% url 'messaging:edit_message' message.id %}">Edit</a>
+        {% endif %}
+        <a href="{% url 'messaging:inbox' %}">Back to Inbox</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message List (Cached)</title>
+</head>
+<body>
+    <h1>Message List</h1>
+    <p><em>This view is cached for 60 seconds</em></p>
+    
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <h2>Sent Messages</h2>
+            <ul>
+            {% for message in sent_messages %}
+                <li>
+                    <strong>To: {{ message.receiver.username }}</strong><br>
+                    {{ message.content|truncatewords:10 }}<br>
+                    <small>{{ message.timestamp }}</small>
+                </li>
+            {% empty %}
+                <li>No sent messages</li>
+            {% endfor %}
+            </ul>
+        </div>
+        
+        <div style="flex: 1;">
+            <h2>Received Messages</h2>
+            <ul>
+            {% for message in received_messages %}
+                <li>
+                    <strong>From: {{ message.sender.username }}</strong><br>
+                    {{ message.content|truncatewords:10 }}<br>
+                    <small>{{ message.timestamp }}</small>
+                </li>
+            {% empty %}
+                <li>No received messages</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    <div>
+        <a href="/">Home</a>
+    </div>
+</body>
+</html>
