@@ -7,7 +7,7 @@ This module contains signal handlers for:
 - Task 2: Cleaning up related data when users are deleted
 """
 
-from django.db.models.signals import post_save, pre_save, post_delete
+from django.db.models.signals import post_save, pre_save, post_delete, pre_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from .models import Message, Notification, MessageHistory
@@ -87,43 +87,51 @@ def delete_user_related_data(sender, instance, **kwargs):
     Task 2: Signal handler to clean up related data when a user is deleted.
     
     This signal listens to the post_delete event on the User model and
-    deletes all messages, notifications, and message histories associated
-    with the user.
-    
-    Note: Due to CASCADE foreign keys, Django will automatically delete
-    related objects. This signal provides explicit control and can be
-    extended with custom logic if needed.
+    explicitly deletes all messages, notifications, and message histories 
+    associated with the user.
     
     Args:
         sender: The User model class
         instance: The User instance that was deleted
         **kwargs: Additional keyword arguments
     """
-    # The CASCADE option on foreign keys will automatically delete:
-    # - All messages sent by this user (sender FK)
-    # - All messages received by this user (receiver FK)
-    # - All notifications for this user (user FK)
-    # - Message histories will be deleted when their related messages are deleted
+    # Explicitly delete all messages sent by this user
+    Message.objects.filter(sender=instance).delete()
+    
+    # Explicitly delete all messages received by this user
+    Message.objects.filter(receiver=instance).delete()
+    
+    # Explicitly delete all notifications for this user
+    Notification.objects.filter(user=instance).delete()
+    
+    # Message histories are automatically deleted when messages are deleted
+    # due to CASCADE foreign key relationship
     
     # Log the deletion for auditing purposes
     print(f"Cleaning up data for deleted user: {instance.username}")
-    
-    # You can add custom cleanup logic here if needed, for example:
-    # - Send notification to admin
-    # - Archive data before deletion
-    # - Update statistics
-    
-    # Note: This signal fires AFTER deletion, so the related objects
-    # are already deleted by CASCADE. If you need to access them,
-    # use pre_delete signal instead.
 
 
-@receiver(pre_save, sender=User)
-def user_deletion_prep(sender, instance, **kwargs):
+@receiver(pre_delete, sender=User)
+def cleanup_user_data_before_delete(sender, instance, **kwargs):
     """
-    Optional: Prepare for user deletion or track user changes.
+    Task 2: Clean up user-related data before user deletion.
     
-    This can be used to perform actions before a user is saved,
-    such as tracking username changes or preparing for deletion.
+    This pre_delete signal explicitly removes all messages, notifications,
+    and related data before the user is deleted. This demonstrates explicit
+    cleanup using Message.objects.filter().delete() pattern.
+    
+    Args:
+        sender: The User model class
+        instance: The User instance about to be deleted
+        **kwargs: Additional keyword arguments
     """
-    pass
+    # Explicitly delete all messages where user is sender
+    Message.objects.filter(sender=instance).delete()
+    
+    # Explicitly delete all messages where user is receiver  
+    Message.objects.filter(receiver=instance).delete()
+    
+    # Delete all notifications for this user
+    Notification.objects.filter(user=instance).delete()
+    
+    print(f"Pre-delete cleanup completed for user: {instance.username}")
