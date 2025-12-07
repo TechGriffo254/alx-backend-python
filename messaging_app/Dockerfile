@@ -1,4 +1,4 @@
-# Use official Python runtime as base image
+﻿# Use official Python runtime as base image
 FROM python:3.10-slim
 
 # Set environment variables
@@ -22,7 +22,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project files
 COPY . /app/
 
-# Expose port 8000
+# Expose port 8000 for Django application
+# To run: docker run -p 8000:8000 messaging-app
 EXPOSE 8000
 
 # Run the application
