@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out code from GitHub...'
-                echo "Git branch: ${GIT_BRANCH}"
+                echo "git branch: ${GIT_BRANCH}"
                 checkout scm
             }
         }
