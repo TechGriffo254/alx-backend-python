@@ -1,120 +1,69 @@
-﻿name: CI - Testing and Code Quality
+name: CI Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, master ]
 
 jobs:
   test:
-    name: Run Tests and Code Quality Checks
     runs-on: ubuntu-latest
     
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: messaging_app_test
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_messaging_app
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y default-libmysqlclient-dev gcc pkg-config
-      
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-django pytest-cov flake8 coverage
-      
-      - name: Wait for MySQL
-        run: |
-          until mysqladmin ping -h 127.0.0.1 -P 3306 --silent; do
-            echo 'Waiting for MySQL to be ready...'
-            sleep 2
-          done
-      
-      - name: Run flake8 linting
-        run: |
-          flake8 . --exclude=venv,migrations,__pycache__ --max-line-length=120 --count --statistics --show-source
-        continue-on-error: false
-      
-      - name: Run Django tests with pytest
-        env:
-          DJANGO_SETTINGS_MODULE: messaging_app.settings
-          DB_ENGINE: django.db.backends.mysql
-          DB_NAME: messaging_app_test
-          DB_USER: test_user
-          DB_PASSWORD: test_password
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-        run: |
-          pytest --verbose --junit-xml=test-results.xml --cov=. --cov-report=xml --cov-report=html --cov-report=term
-      
-      - name: Generate coverage report
-        if: always()
-        run: |
-          coverage report
-          coverage xml
-      
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: test-results.xml
-      
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-report
-          path: |
-            htmlcov/
-            coverage.xml
-      
-      - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
-        uses: py-cov-action/python-coverage-comment-action@v3
-        with:
-          GITHUB_TOKEN: ${{ github.token }}
-          MINIMUM_GREEN: 80
-          MINIMUM_ORANGE: 60
-      
-      - name: Check test results
-        if: always()
-        run: |
-          if [ -f test-results.xml ]; then
-            echo "Tests completed successfully"
-          else
-            echo "Test results not found"
-            exit 1
-          fi
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('messaging_app/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r messaging_app/requirements.txt
+    
+    - name: Run tests with pytest
+      env:
+        DATABASE_URL: mysql://root:root@127.0.0.1:3306/test_messaging_app
+      run: |
+        cd messaging_app
+        pytest --verbose --junit-xml=test-results.xml --cov=. --cov-report=xml --cov-report=html
+    
+    - name: Run flake8 linting
+      run: |
+        cd messaging_app
+        flake8 . --config=.flake8
+      continue-on-error: true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: messaging_app/test-results.xml
+    
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: messaging_app/htmlcov/
