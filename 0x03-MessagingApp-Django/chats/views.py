@@ -134,7 +134,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     pagination_class = MessagePagination
     filterset_class = MessageFilter
-    search_fields = ['message_body']
     ordering_fields = ['sent_at']
     ordering = ['-sent_at']
     
