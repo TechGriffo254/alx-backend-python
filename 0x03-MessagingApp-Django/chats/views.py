@@ -23,8 +23,6 @@ class UserViewSet(viewsets.ModelViewSet):
     """ViewSet for User model."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    search_fields = ['username', 'email', 'first_name', 'last_name']
-    ordering_fields = ['created_at', 'username']
     ordering = ['-created_at']
     
     def get_permissions(self):
@@ -63,7 +61,6 @@ class ConversationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     pagination_class = ConversationPagination
     filterset_class = ConversationFilter
-    ordering_fields = ['created_at']
     ordering = ['-created_at']
     
     def get_queryset(self):
@@ -134,7 +131,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     pagination_class = MessagePagination
     filterset_class = MessageFilter
-    ordering_fields = ['sent_at']
     ordering = ['-sent_at']
     
     def get_queryset(self):
