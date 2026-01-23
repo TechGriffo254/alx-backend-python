@@ -10,7 +10,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security Settings
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-pe2%i\-5)6+k1hk\@-p^h1vv#p44aut0^v#1w94&q')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-pe2-percent-i-5-6-k1hk-at-p-h1vv-p44aut0-v-1w94-q')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
