@@ -1,22 +1,137 @@
-﻿version: 2
+﻿services:
+  # PostgreSQL Database
+  - type: pserv
+    name: messaging-app-db
+    plan: free
+    ipAllowList: []
 
-build:
-  os: ubuntu-22.04
-  tools:
-    python: "3.11"
+  # Redis for Celery result backend
+  - type: redis
+    name: messaging-app-redis
+    plan: free
+    ipAllowList: []
 
-  jobs:
-    pre_build:
-      commands:
-        - pip install --upgrade pip
-        - pip install -r requirements.txt
-    
-    build:
-      commands:
-        - python manage.py collectstatic --noinput
-        - python manage.py migrate --noinput
+  # Main Django Web Application
+  - type: web
+    name: messaging-app-web
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn messaging_app.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DB_ENGINE
+        value: "django.db.backends.postgresql"
+      - key: DB_NAME
+        fromDatabase:
+          name: messaging-app-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: messaging-app-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: messaging-app-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: messaging-app-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: messaging-app-db
+          property: port
+      - key: CELERY_BROKER_URL
+        value: "amqp://guest:guest@localhost:5672//"
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: messaging-app-redis
+          property: connectionString
+      - key: EMAIL_BACKEND
+        value: "django.core.mail.backends.smtp.EmailBackend"
+      - key: EMAIL_HOST
+        value: "smtp.gmail.com"
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "False"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
 
-python:
-  version: 3.11
-  install:
-    - requirements: requirements.txt
+  # Celery Worker for background tasks
+  - type: worker
+    name: messaging-app-celery-worker
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "celery -A messaging_app worker --loglevel=info"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: messaging-app-web
+          envVarKey: SECRET_KEY
+      - key: DEBUG
+        value: "False"
+      - key: DB_ENGINE
+        value: "django.db.backends.postgresql"
+      - key: DB_NAME
+        fromDatabase:
+          name: messaging-app-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: messaging-app-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: messaging-app-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: messaging-app-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: messaging-app-db
+          property: port
+      - key: CELERY_BROKER_URL
+        value: "amqp://guest:guest@localhost:5672//"
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: messaging-app-redis
+          property: connectionString
+      - key: EMAIL_BACKEND
+        value: "django.core.mail.backends.smtp.EmailBackend"
+      - key: EMAIL_HOST
+        value: "smtp.gmail.com"
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
